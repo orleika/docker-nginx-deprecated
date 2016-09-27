@@ -1,6 +1,11 @@
 server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
+    listen 80;
+    listen [::]:80;
+    server_name ${NGINX_HOST}
+
+    location /.well-known/acme-challenge {
+        root   /usr/share/nginx/html;
+    }
 
     # Redirect all HTTP requests to HTTPS with a 301 Moved Permanently response.
     return 301 https://$host$request_uri;
@@ -14,11 +19,9 @@ server {
     # certs sent to the client in SERVER HELLO are concatenated in ssl_certificate
     ssl_certificate /etc/letsencrypt/live/${NGINX_HOST}/fullchain.pem;
     ssl_certificate_key /etc/letsencrypt/live/${NGINX_HOST}/privkey.pem;
-    ssl_session_timeout 1d;
-    ssl_session_cache shared:SSL:50m;
+    ssl_session_timeout 60m;
+    ssl_session_cache shared:SSL:10m;
     ssl_session_tickets off;
-
-    # Diffie-Hellman parameter for DHE ciphersuites, recommended 2048 bits
     ssl_dhparam /etc/nginx/ssl/dhparam.pem;
 
     # modern configuration. tweak to your needs.
@@ -33,11 +36,9 @@ server {
     # fetch OCSP records from URL in ssl_certificate and cache them
     ssl_stapling on;
     ssl_stapling_verify on;
-
-    ## verify chain of trust of OCSP response using Root CA and Intermediate certs
-    ssl_trusted_certificate /path/to/root_CA_cert_plus_intermediates;
-
-    resolver 8.8.8.8 8.8.4.4;
+    ssl_trusted_certificate /etc/letsencrypt/live/${NGINX_HOST}/fullchain.pem;
+    resolver 8.8.8.8 8.8.4.4 valid=300s;
+    resolver_timeout 10s;
 
     # https://developer.mozilla.org/en-US/docs/HTTP/X-Frame-Options
     add_header X-Frame-Options SAMEORIGIN;
@@ -58,7 +59,7 @@ server {
     limit_req zone=req_limit_per_ip burst=10 nodelay;
 
     # Limit Available Methods
-    if ($request_method !~ ^(GET|HEAD|POST)$ ) {
+    if ($request_method !~ ^(GET|HEAD)$ ) {
         return 444;
     }
 
@@ -88,6 +89,7 @@ server {
         expires           30d;
     }
 
+    # Stop image hotlinking
     location /images/ {
         valid_referers none blocked ${NGINX_HOST};
         if ($invalid_referer) {
