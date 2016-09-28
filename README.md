@@ -2,14 +2,15 @@
 
 # Docker-nginx
 Implementation static web server using nginx with docker-compose v2.
-Supporting HTTPS with letsencrypt docker image, which updates server certification automatically.
+Supporting HTTPS with letsencrypt docker container, which updates server certification automatically.
 
 ## Get Started
 1. [Install Docker](https://docs.docker.com/engine/installation/)
 2. [Install Docker Compose](https://docs.docker.com/compose/install/)
-3. `git clone https://github.com/orleika` and `cd` this repository directory
-4. place `.env` file
-5. `docker-compose up -d`
+3. run: `git clone https://github.com/orleika/fss && cd fss`
+4. setting `.env` file
+5. run: `docker-compose up`
+6.
 
 ## Environment
 Rename `.env.sample` to `.env` and configure `MYSQL_ROOT_PASSWORD`, `MYSQL_USER`, `MYSQL_PASSWORD`, `MYSQL_DATABASE`
